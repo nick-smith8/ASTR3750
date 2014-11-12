@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
+#include <cmath>
 using namespace std;
 
 
@@ -20,7 +20,7 @@ void ImpactRing(int[HEIGHT][WIDTH], int row, int col);
 void ClearCrater(int[HEIGHT][WIDTH],int row, int col);
 void CheckCrater(int[HEIGHT][WIDTH],int row, int col);
 int CraterCount(int[HEIGHT][WIDTH]);
-double 	 IsSaturated(int currentCraters, int DoubleTimeCraters);
+bool IsSaturated(int currentCraters, int DoubleTimeCraters);
 
 int main(){
 
@@ -29,12 +29,13 @@ srand (time(NULL));
 
 //Init of matrix and initial Saturation of 0
 int CraterZone [HEIGHT][WIDTH];
-int IS = 0;
+int CraterZoneOld [HEIGHT][WIDTH];
+
 int Years = 0;
-int OldAmountCraters = 100;
+int OldAmountCraters = 2;
+bool IsSat = true;
 
-
-// Init Every zone to the int 1
+// Init Every zone to the int 0
 for(int i = 0;i<HEIGHT;i++){
 	for(int j = 0; j<WIDTH;j++){
 		CraterZone[i][j] = Not_Hit;
@@ -45,21 +46,59 @@ for(int i = 0;i<HEIGHT;i++){
 
 
 
-while(IS < 95){
+while(IsSat){
 
 Years += 1000;
 
-int row = rand() % 95 + 5;
-int col = rand() % 95 + 5;
 
 
-cout << "Row: " << row << " Col: " << col <<  endl;
+int row = rand() % 90 + 5;
+int col = rand() % 90 + 5;
+
+
+//cout << "Row: " << row << " Col: " << col <<  endl;
 
 CheckCrater(CraterZone,row,col);
+
+for(int i = 0;i<HEIGHT;i++){
+	for(int j = 0; j<WIDTH;j++){
+		CraterZoneOld[i][j] = CraterZone[i][j];
+	}
+}
+
+
 
 //printCrater(CraterZone);
 
 
+
+
+
+for(int i = Years;i <= Years * 2  ;i+=1000){
+	
+	int rowin = rand() % 90 + 5;
+	int colin = rand() % 90 + 5;
+	
+	CheckCrater(CraterZone,rowin,colin);
+	//cout << "I'm in " << i << endl;
+	
+	}
+	
+//printCrater(CraterZone);
+
+OldAmountCraters = CraterCount(CraterZoneOld);
+
+IsSat = IsSaturated(CraterCount(CraterZone),OldAmountCraters);
+
+for(int i = 0;i<HEIGHT;i++){
+	for(int j = 0; j<WIDTH;j++){
+		CraterZone[i][j] = CraterZoneOld[i][j];
+	}
+}
+
+cout << "After "<< Years << " amount of years the amount of craters is: "<< CraterCount(CraterZone) << endl;
+
+/*
 int before = CraterCount(CraterZone);
 
 for(int i = Years; i < (Years*2);i += 1000){
@@ -84,11 +123,11 @@ cout << "Old Amount of Craters Before: " << OldAmountCraters<< endl;
 
 
 cout << "IS is: " << IS << " "<< "Old Amount of Craters: " << OldAmountCraters<< endl;
-
+printCrater(CraterZone);
 
 
 }
-
+*/
 }
 
 return 0;
@@ -108,9 +147,16 @@ void printCrater(int CraterZone[HEIGHT][WIDTH]){
 		}
 	}
 }
-double IsSaturated(int currentCraters, int OldAmountCraters){
 
-	return double(double(OldAmountCraters)/double(currentCraters))*100;
+bool IsSaturated(int currentCraters, int OldAmountCraters){
+	if(currentCraters == OldAmountCraters){return true;}
+	if((abs((double(currentCraters) - double(OldAmountCraters)))/double(OldAmountCraters))*100 < 5 ){
+		
+		return false;
+		
+		}
+	else{return true;}
+	
 	
 }
 
@@ -129,6 +175,7 @@ void CheckCrater(int CraterZone[HEIGHT][WIDTH],int row, int col){
 	
 
 	for(int r = row+1;r < (row+6) ; r++){
+		
 		if(CraterZone[r][col]==center){
 			ClearCrater(CraterZone,r,col);
 			ImpactRing(CraterZone,row,col);
@@ -224,6 +271,7 @@ void ImpactRing(int CraterZone[HEIGHT][WIDTH],int row, int col){
 		CraterZone[row][c] = In_Radius;
 	}
 	for(int d = col-1;d > (col-6) ; d--){CraterZone[row][d] = In_Radius;}
+	
 	// For top left/right part of crater
 	for (int r = row-1;r > row-4;r--){
 	CraterZone[r][col+1]= In_Radius;
